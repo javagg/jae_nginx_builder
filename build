@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e
+
+export NGINX_VERSION=1.6.0
+
+cd /var/cache/nginx
+if [ ! -f /var/cache/nginx/nginx-${NGINX_VERSION}.tar.gz ]; then
+  wget -q -O /var/cache/nginx/nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
+fi
+tar zxf /var/cache/nginx/nginx-${NGINX_VERSION}.tar.gz
+
+pushd nginx-${NGINX_VERSION}
+ ./configure --prefix=/app/nginx
+make
+make install
+popd
+
+# Copy some missing deps
+mkdir -p /app/nginx/lib
+cp /usr/lib64/libpcrecpp.so.0.0.0 /app/nginx/lib/
+
+cd /app
+tar cjvf nginx-${NGINX_VERSION}.tar.bz2 nginx
+mkdir -p /var/cache/nginx/out
+cp nginx-${NGINX_VERSION}.tar.bz2 /var/cache/nginx/out
